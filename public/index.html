@@ -57,7 +57,30 @@ h1 { text-align: center; position: relative; z-index: 1; }
 }
 #drop-zone.hover { border-color: #333; }
 
-#status { margin-bottom: 20px; font-weight: bold; position: relative; z-index: 1; }
+#status { 
+  margin-bottom: 20px; 
+  font-weight: bold; 
+  position: relative; 
+  z-index: 1; 
+  color: #007bff; 
+  display: flex; 
+  align-items: center; 
+  gap: 10px;
+}
+
+/* Spinner */
+.spinner {
+  border: 4px solid #f3f3f3; 
+  border-top: 4px solid #007bff; 
+  border-radius: 50%; 
+  width: 20px; 
+  height: 20px; 
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 /* Table styling */
 table { width: 100%; border-collapse: collapse; margin-top: 20px; display:none; position: relative; z-index: 1; }
@@ -83,6 +106,7 @@ th { background: #f0f0f0; }
 
 <div id="drop-zone">Drag & Drop CSV file here or click to upload</div>
 <input type="file" id="file-input" style="display:none;" accept=".csv">
+
 <div id="status"></div>
 
 <table id="results-table">
