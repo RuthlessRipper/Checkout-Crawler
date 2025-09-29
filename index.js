@@ -1,83 +1,93 @@
-const axios = require('axios');
-const cheerio = require('cheerio');
-const fs = require('fs');
+const express = require("express");
+const axios = require("axios");
+const cheerio = require("cheerio");
 
-// List of domains to check (one per line in domains.txt)
-const domains = fs.readFileSync('domains.txt', 'utf-8').split('\n').filter(Boolean);
+const app = express();
+app.use(express.json());
 
-// Target domains to check
-const fastrDomain = 'fastrr-boost-ui.pickrr.com';
-const gokwikDomain = 'pdp.gokwik.co';
-
-// Prepare CSV output
-let csvOutput = 'Domain, Status\n'; // CSV Header
+const fastrDomain = "fastrr-boost-ui.pickrr.com";
+const gokwikDomain = "pdp.gokwik.co";
 
 // Function to check a single domain
 async function checkDomain(domain) {
-    // Remove whitespace and prepend protocol to the domain
-    const sanitizedDomain = domain.trim();
-    const fullUrl = `https://${sanitizedDomain}`;
+  const sanitizedDomain = domain.trim();
+  const fullUrl = `https://${sanitizedDomain}`;
 
-    try {
-        const response = await axios.get(fullUrl, { timeout: 10000 });
-        const $ = cheerio.load(response.data);
-        
-        let status = '';
-        
-        // Check if the domain is the gokwik domain
-        if (sanitizedDomain === gokwikDomain) {
-            status = 'Client On Gokwik';
-            console.log(`🔍 ${sanitizedDomain}: Client On Gokwik`);
-        } else {
-            // Check for gokwik links in entire document
-            let hasGokwikLink = false;
-            $('link, script').each((_, el) => {
-                const href = $(el).attr('href') || $(el).attr('src') || '';
-                if (href.includes('gokwik')) {
-                    hasGokwikLink = true;
-                    return false; // break the loop
-                }
-            });
-            
-            if (hasGokwikLink) {
-                status = 'Client On Gokwik';
-                console.log(`🔍 ${sanitizedDomain}: Client On Gokwik`);
-            } else {
-                // Check for fastrr domain in entire document
-                let hasFastrrLink = false;
-                $('link, script').each((_, el) => {
-                    const href = $(el).attr('href') || $(el).attr('src') || '';
-                    if (href.includes(fastrDomain)) {
-                        hasFastrrLink = true;
-                        return false; // break the loop
-                    }
-                });
-                
-                if (hasFastrrLink) {
-                    status = 'Fastrr Link Found';
-                    console.log(`✅ ${sanitizedDomain}: Fastrr Link Found`);
-                } else {
-                    status = 'Fastrr Not Found';
-                    console.log(`❌ ${sanitizedDomain}: Fastrr Not Found`);
-                }
-            }
-        }
-        
-        csvOutput += `${sanitizedDomain}, "${status}"\n`;
+  try {
+    const response = await axios.get(fullUrl, { timeout: 10000 });
+    const $ = cheerio.load(response.data);
 
-    } catch (error) {
-        console.error(`⚠️ Error checking ${sanitizedDomain}: ${error.message}`);
-        csvOutput += `${sanitizedDomain}, "Domain Unreachable"\n`;
+    // Case 1: Direct match to gokwik
+    if (sanitizedDomain === gokwikDomain) {
+      return "Client On Gokwik";
     }
+
+    // Case 2: Look for gokwik references
+    let hasGokwikLink = false;
+    $("link, script").each((_, el) => {
+      const href = $(el).attr("href") || $(el).attr("src") || "";
+      if (href.includes("gokwik")) {
+        hasGokwikLink = true;
+        return false;
+      }
+    });
+    if (hasGokwikLink) {
+      return "Client On Gokwik";
+    }
+
+    // Case 3: Look for fastrr references
+    let hasFastrrLink = false;
+    $("link, script").each((_, el) => {
+      const href = $(el).attr("href") || $(el).attr("src") || "";
+      if (href.includes(fastrDomain)) {
+        hasFastrrLink = true;
+        return false;
+      }
+    });
+    if (hasFastrrLink) {
+      return "Fastrr Link Found";
+    }
+
+    return "Fastrr Not Found";
+  } catch (err) {
+    return "Domain Unreachable";
+  }
 }
 
-// Run checks for all domains
-(async () => {
-    for (const domain of domains) {
-        await checkDomain(domain);
-    }
-    
-    // Write CSV output to a file
-    fs.writeFileSync('output.csv', csvOutput);
-    console.log('Results written to output.csv');
-})();
+// Home route
+app.get("/", (req, res) => {
+  res.send("✅ Crawler API is running. Use /crawl?domain=example.com");
+});
+
+// Single domain check
+app.get("/crawl", async (req, res) => {
+  const domain = req.query.domain;
+  if (!domain) {
+    return res
+      .status(400)
+      .json({ error: "Please provide a domain, e.g. /crawl?domain=example.com" });
+  }
+
+  const status = await checkDomain(domain);
+  res.json({ domain, status });
+});
+
+// Multi-domain check (send JSON body with { "domains": ["a.com", "b.com"] })
+app.post("/crawl-multi", async (req, res) => {
+  const domains = req.body.domains;
+  if (!domains || !Array.isArray(domains)) {
+    return res.status(400).json({ error: "Please send { domains: [..] }" });
+  }
+
+  const results = [];
+  for (const d of domains) {
+    const status = await checkDomain(d);
+    results.push({ domain: d, status });
+  }
+  res.json(results);
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
