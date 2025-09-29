@@ -16,14 +16,20 @@ dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.class
 dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('hover'); handleFile(e.dataTransfer.files[0]); });
 
 function handleFile(file) {
-  if (!file || file.type !== 'text/csv') { alert('Please upload a valid CSV file.'); return; }
+  if (!file || file.type !== 'text/csv') {
+    alert('Please upload a valid CSV file.');
+    return;
+  }
 
+  // Reset UI
   statusDiv.textContent = '';
   table.style.display = 'none';
   downloadBtn.style.display = 'none';
   chartContainer.style.display = 'none';
   tbody.innerHTML = '';
-  loading.style.display = 'flex'; // Show spinner
+
+  // Show spinner ONLY after user uploads a file
+  loading.style.display = 'flex'; 
 
   const formData = new FormData();
   formData.append('file', file);
@@ -31,7 +37,7 @@ function handleFile(file) {
   fetch('/upload', { method: 'POST', body: formData })
     .then(res => res.blob())
     .then(blob => {
-      loading.style.display = 'none'; // Hide spinner
+      loading.style.display = 'none'; // hide spinner
       statusDiv.textContent = 'Processing complete!';
 
       const reader = new FileReader();
@@ -76,7 +82,7 @@ function handleFile(file) {
       };
     })
     .catch(err => {
-      loading.style.display = 'none'; // Hide spinner
+      loading.style.display = 'none';
       console.error(err); 
       statusDiv.textContent='Error processing file.';
     });
