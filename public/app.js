@@ -15,13 +15,9 @@ dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.class
 dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('hover'); handleFile(e.dataTransfer.files[0]); });
 
 function handleFile(file) {
-  if (!file || file.type !== 'text/csv') {
-    alert('Please upload a valid CSV file.');
-    return;
-  }
+  if (!file || file.type !== 'text/csv') { alert('Please upload a valid CSV file.'); return; }
 
-  // Reset UI
-  statusDiv.textContent = '';
+  statusDiv.textContent = 'Uploading file...';
   table.style.display = 'none';
   downloadBtn.style.display = 'none';
   chartContainer.style.display = 'none';
@@ -43,7 +39,6 @@ function handleFile(file) {
         lines.forEach((line,index) => {
           if (index === 0) return; // skip header
           const [domain, status] = line.split(',');
-          if (!status) return;
           summary[status] = (summary[status]||0)+1;
           const tr = document.createElement('tr');
           tr.innerHTML = `<td>${domain}</td><td class="${status}">${status}</td>`;
@@ -53,6 +48,7 @@ function handleFile(file) {
         table.style.display = 'table';
         downloadBtn.style.display = 'inline-block';
 
+        // Draw chart
         chartContainer.style.display = 'block';
         new Chart(chartCanvas, {
           type: 'pie',
@@ -76,8 +72,5 @@ function handleFile(file) {
         a.click(); a.remove(); URL.revokeObjectURL(url);
       };
     })
-    .catch(err => {
-      console.error(err); 
-      statusDiv.textContent='Error processing file.';
-    });
+    .catch(err => { console.error(err); statusDiv.textContent='Error processing file.'; });
 }
