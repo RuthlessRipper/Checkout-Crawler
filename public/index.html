@@ -28,13 +28,14 @@ body::before {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  opacity: 0.05; /* very faint */
+  opacity: 0.05; 
   transform: translate(-50%, -50%);
-  pointer-events: none; /* allows clicks through the image */
+  pointer-events: none; 
   z-index: 0;
 }
 
 h1 { text-align: center; position: relative; z-index: 1; }
+
 #instruction { 
   text-align:center; 
   font-weight:bold; 
@@ -55,7 +56,10 @@ h1 { text-align: center; position: relative; z-index: 1; }
   z-index: 1; 
 }
 #drop-zone.hover { border-color: #333; }
+
 #status { margin-bottom: 20px; font-weight: bold; position: relative; z-index: 1; }
+
+/* Table styling */
 table { width: 100%; border-collapse: collapse; margin-top: 20px; display:none; position: relative; z-index: 1; }
 th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
 th { background: #f0f0f0; }
@@ -63,8 +67,10 @@ th { background: #f0f0f0; }
 .Fastrr\ Link\ Found { background-color: #fff3cd; }
 .Fastrr\ Not\ Found { background-color: #f8d7da; }
 .Domain\ Unreachable { background-color: #e2e3e5; }
+
 #download-btn { margin-top: 20px; padding: 10px 20px; font-size: 16px; display:none; position: relative; z-index: 1; }
 #chart-container { width: 100%; margin-top: 30px; display:none; position: relative; z-index: 1; }
+
 </style>
 </head>
 <body>
