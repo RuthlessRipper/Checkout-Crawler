@@ -6,7 +6,6 @@ const tbody = table.querySelector('tbody');
 const downloadBtn = document.getElementById('download-btn');
 const chartContainer = document.getElementById('chart-container');
 const chartCanvas = document.getElementById('summary-chart');
-const loading = document.getElementById('loading');
 
 dropZone.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
@@ -28,16 +27,12 @@ function handleFile(file) {
   chartContainer.style.display = 'none';
   tbody.innerHTML = '';
 
-  // Show spinner ONLY after user uploads a file
-  loading.style.display = 'flex'; 
-
   const formData = new FormData();
   formData.append('file', file);
 
   fetch('/upload', { method: 'POST', body: formData })
     .then(res => res.blob())
     .then(blob => {
-      loading.style.display = 'none'; // hide spinner
       statusDiv.textContent = 'Processing complete!';
 
       const reader = new FileReader();
@@ -82,7 +77,6 @@ function handleFile(file) {
       };
     })
     .catch(err => {
-      loading.style.display = 'none';
       console.error(err); 
       statusDiv.textContent='Error processing file.';
     });
