@@ -22,18 +22,15 @@ function handleFile(file) {
     return;
   }
 
-  // Reset UI completely
-  statusDiv.textContent = '';
+  // Reset UI
   table.style.display = 'none';
   tbody.innerHTML = '';
   downloadBtn.style.display = 'none';
   chartContainer.style.display = 'none';
+  if (currentChart) { currentChart.destroy(); currentChart=null; }
 
-  // Destroy previous chart if exists
-  if (currentChart) {
-    currentChart.destroy();
-    currentChart = null;
-  }
+  // Show processing with spinner
+  statusDiv.innerHTML = '<div class="spinner"></div> Uploading and processing file...';
 
   const formData = new FormData();
   formData.append('file', file);
@@ -43,7 +40,6 @@ function handleFile(file) {
     .then(blob => {
       const reader = new FileReader();
       reader.onload = () => {
-        // Normalize line endings and split
         const lines = reader.result.replace(/\r/g,'').split('\n').filter(l => l.trim());
 
         if (lines.length < 2) {
@@ -51,7 +47,6 @@ function handleFile(file) {
           return;
         }
 
-        // Parse header
         const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
         const domainIndex = headers.findIndex(h => h.toLowerCase() === 'domain');
 
@@ -66,7 +61,7 @@ function handleFile(file) {
         lines.slice(1).forEach(line => {
           const cols = line.split(',').map(c => c.replace(/"/g,'').trim());
           const domain = cols[domainIndex];
-          const status = cols[1]?.trim(); // status column from server CSV
+          const status = cols[1]?.trim();
 
           if (!domain || !status) return;
 
@@ -82,13 +77,10 @@ function handleFile(file) {
           return;
         }
 
-        // Show table and chart
         table.style.display = 'table';
         downloadBtn.style.display = 'inline-block';
         chartContainer.style.display = 'block';
 
-        // Render pie chart
-        if (currentChart) currentChart.destroy();
         currentChart = new Chart(chartCanvas, {
           type: 'pie',
           data: {
@@ -103,7 +95,6 @@ function handleFile(file) {
 
         statusDiv.textContent = 'Processing complete!';
 
-        // Download CSV button
         downloadBtn.onclick = () => {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -111,7 +102,6 @@ function handleFile(file) {
           document.body.appendChild(a);
           a.click(); a.remove(); URL.revokeObjectURL(url);
         };
-
       };
       reader.readAsText(blob);
     })
