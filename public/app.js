@@ -6,6 +6,7 @@ const tbody = table.querySelector('tbody');
 const downloadBtn = document.getElementById('download-btn');
 const chartContainer = document.getElementById('chart-container');
 const chartCanvas = document.getElementById('summary-chart');
+const loading = document.getElementById('loading');
 
 dropZone.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
@@ -17,11 +18,12 @@ dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.
 function handleFile(file) {
   if (!file || file.type !== 'text/csv') { alert('Please upload a valid CSV file.'); return; }
 
-  statusDiv.textContent = 'Uploading file...';
+  statusDiv.textContent = '';
   table.style.display = 'none';
   downloadBtn.style.display = 'none';
   chartContainer.style.display = 'none';
   tbody.innerHTML = '';
+  loading.style.display = 'flex'; // Show spinner
 
   const formData = new FormData();
   formData.append('file', file);
@@ -29,6 +31,7 @@ function handleFile(file) {
   fetch('/upload', { method: 'POST', body: formData })
     .then(res => res.blob())
     .then(blob => {
+      loading.style.display = 'none'; // Hide spinner
       statusDiv.textContent = 'Processing complete!';
 
       const reader = new FileReader();
@@ -39,6 +42,7 @@ function handleFile(file) {
         lines.forEach((line,index) => {
           if (index === 0) return; // skip header
           const [domain, status] = line.split(',');
+          if (!status) return;
           summary[status] = (summary[status]||0)+1;
           const tr = document.createElement('tr');
           tr.innerHTML = `<td>${domain}</td><td class="${status}">${status}</td>`;
@@ -48,7 +52,6 @@ function handleFile(file) {
         table.style.display = 'table';
         downloadBtn.style.display = 'inline-block';
 
-        // Draw chart
         chartContainer.style.display = 'block';
         new Chart(chartCanvas, {
           type: 'pie',
@@ -72,5 +75,9 @@ function handleFile(file) {
         a.click(); a.remove(); URL.revokeObjectURL(url);
       };
     })
-    .catch(err => { console.error(err); statusDiv.textContent='Error processing file.'; });
+    .catch(err => {
+      loading.style.display = 'none'; // Hide spinner
+      console.error(err); 
+      statusDiv.textContent='Error processing file.';
+    });
 }
