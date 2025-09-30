@@ -1,48 +1,97 @@
 const express = require("express");
 const multer = require("multer");
-const csvParser = require("csv-parser");
 const fs = require("fs");
+const csv = require("csv-parser");
+const axios = require("axios");
+const cheerio = require("cheerio");
+const { Parser } = require("json2csv");
 const path = require("path");
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
-app.use(express.static("public"));
+const fastrDomain = "fastrr-boost-ui.pickrr.com";
+const gokwikDomain = "pdp.gokwik.co";
 
-// Dummy domain check logic (replace with your crawler later)
-function checkDomain(domain) {
-  return Math.random() > 0.3 ? "Active ✅" : "Not Reachable ❌";
+// Serve frontend
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
+
+// Upload CSV
+app.post("/upload", upload.single("file"), async (req, res) => {
+  try {
+    const domains = [];
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(req.file.path)
+        .pipe(csv())
+        .on("data", (row) => {
+          if (row.Domain && row.Domain.toString().trim()) {
+            domains.push(row.Domain.toString().trim());
+          }
+        })
+        .on("end", resolve)
+        .on("error", reject);
+    });
+
+    if (!domains.length) {
+      return res.status(400).json({ error: "Wrong data format. CSV must have a 'Domain' header." });
+    }
+
+    const output = [];
+    for (const domain of domains) {
+      const status = await checkDomain(domain);
+      output.push({ Domain: domain, Status: status });
+    }
+
+    res.json(output);
+    fs.unlinkSync(req.file.path);
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Single domain check
+app.post("/check-domain", async (req, res) => {
+  const { domain } = req.body;
+  if (!domain) return res.status(400).json({ error: "Domain is required" });
+  const status = await checkDomain(domain);
+  res.json({ Domain: domain, Status: status });
+});
+
+async function checkDomain(domain) {
+  const fullUrl = `https://${domain}`;
+  try {
+    const response = await axios.get(fullUrl, { timeout: 10000 });
+    const $ = cheerio.load(response.data);
+
+    if (domain === gokwikDomain) return "Client On Gokwik";
+
+    let hasGokwikLink = false;
+    $("link, script").each((_, el) => {
+      const href = $(el).attr("href") || $(el).attr("src") || "";
+      if (href.includes("gokwik")) {
+        hasGokwikLink = true;
+        return false;
+      }
+    });
+    if (hasGokwikLink) return "Client On Gokwik";
+
+    let hasFastrrLink = false;
+    $("link, script").each((_, el) => {
+      const href = $(el).attr("href") || $(el).attr("src") || "";
+      if (href.includes(fastrDomain)) {
+        hasFastrrLink = true;
+        return false;
+      }
+    });
+    if (hasFastrrLink) return "Fastrr Link Found";
+
+    return "Fastrr Not Found";
+  } catch {
+    return "Domain Unreachable";
+  }
 }
 
-// Single domain check (API)
-app.get("/check-single", (req, res) => {
-  const domain = req.query.domain;
-  if (!domain) {
-    return res.status(400).json({ error: "No domain provided" });
-  }
-  res.json({ domain, status: checkDomain(domain) });
-});
-
-// CSV upload (API)
-app.post("/upload", upload.single("csvFile"), (req, res) => {
-  const results = [];
-  const filePath = req.file.path;
-
-  fs.createReadStream(filePath)
-    .pipe(csvParser())
-    .on("data", (row) => {
-      if (row.Domain) {
-        results.push({ domain: row.Domain, status: checkDomain(row.Domain) });
-      }
-    })
-    .on("end", () => {
-      fs.unlinkSync(filePath);
-      if (results.length === 0) {
-        return res.status(400).json({ error: "CSV must contain 'Domain' column" });
-      }
-      res.json({ results });
-    });
-});
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
