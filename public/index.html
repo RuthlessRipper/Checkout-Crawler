@@ -1,163 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crawler X</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { 
-      font-family: Arial; 
-      max-width: 900px; 
-      margin: auto; 
-      padding: 20px; 
-      position: relative; 
-      min-height: 100vh; 
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRAWLER-X</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { 
+  font-family: Arial; 
+  max-width: 900px; 
+  margin: auto; 
+  padding: 20px; 
+  position: relative; 
+  min-height: 100vh; 
+}
 
-    /* Transparent background logo */
-    body::before {
-      content: "";
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 400px;
-      height: 400px;
-      background-image: url('https://sr-website.shiprocket.in/wp-content/uploads/2023/01/shiprocket_logo.svg');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      opacity: 0.05; 
-      transform: translate(-50%, -50%);
-      pointer-events: none; 
-      z-index: 0;
-    }
+/* Transparent background logo */
+body::before {
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  height: 400px;
+  background-image: url('https://sr-website.shiprocket.in/wp-content/uploads/2023/01/shiprocket_logo.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.05; 
+  transform: translate(-50%, -50%);
+  pointer-events: none; 
+  z-index: 0;
+}
 
-    h1 { 
-      text-align: center; 
-      position: relative; 
-      z-index: 1; 
-      color:#00ff99; 
-      font-family: monospace; 
-      text-shadow:0 0 10px #00ff99;
-    }
+h1 { text-align: center; position: relative; z-index: 1; }
 
-    #instruction { 
-      text-align:center; 
-      font-weight:bold; 
-      color:#d9534f; 
-      font-size:16px; 
-      margin-bottom: 15px; 
-      position: relative; 
-      z-index: 1; 
-    }
+#instruction { 
+  text-align:center; 
+  font-weight:bold; 
+  color:#d9534f; 
+  font-size:16px; 
+  margin-bottom: 15px; 
+  position: relative; 
+  z-index: 1; 
+}
 
-    #drop-zone { 
-      border: 2px dashed #aaa; 
-      padding: 40px; 
-      text-align: center; 
-      margin-bottom: 20px; 
-      cursor:pointer; 
-      position: relative; 
-      z-index: 1; 
-    }
-    #drop-zone.hover { border-color: #333; }
+#drop-zone { 
+  border: 2px dashed #aaa; 
+  padding: 40px; 
+  text-align: center; 
+  margin-bottom: 20px; 
+  cursor:pointer; 
+  position: relative; 
+  z-index: 1; 
+}
+#drop-zone.hover { border-color: #333; }
 
-    #status { 
-      margin-bottom: 20px; 
-      font-weight: bold; 
-      position: relative; 
-      z-index: 1; 
-      color: #007bff; 
-      display: flex; 
-      align-items: center; 
-      gap: 10px;
-      justify-content: center;
-    }
+#status { 
+  margin-bottom: 6px; 
+  font-weight: bold; 
+  position: relative; 
+  z-index: 1; 
+  color: #007bff; 
+  display: flex; 
+  align-items: center; 
+  gap: 10px;
+}
 
-    /* Table styling */
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      margin-top: 20px; 
-      display:none; 
-      position: relative; 
-      z-index: 1; 
-    }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; }
+/* Timer */
+#timer {
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: #333;
+  position: relative;
+  z-index: 1;
+}
 
-    .Client\ On\ Gokwik { background-color: #d4edda; }
-    .Fastrr\ Link\ Found { background-color: #fff3cd; }
-    .Fastrr\ Not\ Found { background-color: #f8d7da; }
-    .Domain\ Unreachable { background-color: #e2e3e5; }
+/* Spinner */
+.spinner {
+  border: 4px solid #f3f3f3; 
+  border-top: 4px solid #007bff; 
+  border-radius: 50%; 
+  width: 20px; 
+  height: 20px; 
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
-    #download-btn { 
-      margin-top: 20px; 
-      padding: 10px 20px; 
-      font-size: 16px; 
-      display:none; 
-      position: relative; 
-      z-index: 1; 
-      margin-left: auto;
-      margin-right: auto;
-      display: block;
-    }
+/* Table styling */
+table { width: 100%; border-collapse: collapse; margin-top: 20px; display:none; position: relative; z-index: 1; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+th { background: #f0f0f0; }
+.Client\ On\ Gokwik { background-color: #d4edda; }
+.Fastrr\ Link\ Found { background-color: #fff3cd; }
+.Fastrr\ Not\ Found { background-color: #f8d7da; }
+.Domain\ Unreachable { background-color: #e2e3e5; }
 
-    /* Chart centered */
-    #chart-container { 
-      width: 70%; 
-      margin: 30px auto; 
-      display:none; 
-      position: relative; 
-      z-index: 1; 
-    }
+#download-btn { margin-top: 20px; padding: 10px 20px; font-size: 16px; display:none; position: relative; z-index: 1; }
+#chart-container { width: 100%; margin-top: 30px; display:none; position: relative; z-index: 1; }
 
-    /* Single domain input */
-    #single-check { 
-      text-align: center; 
-      margin-bottom: 20px; 
-      position: relative; 
-      z-index: 1; 
-    }
-    #domain-input { padding:8px; width:250px; }
-    #check-btn { padding:8px 16px; margin-left:10px; }
-  </style>
+</style>
 </head>
 <body>
 
-  <h1>CRAWLER-X</h1>
+<h1 style="color:#00ff99; font-family:monospace; text-shadow:0 0 10px #00ff99; text-align:center;">
+  CRAWLER-X
+</h1>
 
-  <p id="instruction">
-    ⚠️ Please make sure your CSV file includes a header: <code>Domain</code>
-  </p>
+<p id="instruction">
+  ⚠️ Please make sure your CSV file includes a header: <code>Domain</code>
+</p>
 
-  <!-- Single Domain Check -->
-  <div id="single-check">
-    <input type="text" id="domain-input" placeholder="Enter domain (e.g. example.com)">
-    <button id="check-btn">Check Domain</button>
-  </div>
+<div id="drop-zone">Drag & Drop CSV file here or click to upload</div>
+<input type="file" id="file-input" style="display:none;" accept=".csv">
 
-  <!-- File Upload -->
-  <div id="drop-zone">Drag & Drop CSV file here or click to upload</div>
-  <input type="file" id="file-input" style="display:none;" accept=".csv">
+<div id="status"></div>
+<div id="timer" style="display:none;"></div>
 
-  <div id="status"></div>
+<table id="results-table">
+  <thead>
+    <tr><th>Domain</th><th>Status</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-  <table id="results-table">
-    <thead>
-      <tr><th>Domain</th><th>Status</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<button id="download-btn">Download CSV</button>
 
-  <button id="download-btn">Download CSV</button>
+<div id="chart-container">
+  <canvas id="summary-chart"></canvas>
+</div>
 
-  <div id="chart-container">
-    <canvas id="summary-chart"></canvas>
-  </div>
-
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
