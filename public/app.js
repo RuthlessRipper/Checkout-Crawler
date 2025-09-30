@@ -10,7 +10,7 @@ document.getElementById("check-btn").addEventListener("click", () => {
     .then(res => res.json())
     .then(data => {
       const row = document.createElement("tr");
-      row.innerHTML = `<td>${data.domain}</td><td>${data.status}</td>`;
+      row.innerHTML = `<td>${data.domain}</td><td class="${data.status}">${data.status}</td>`;
       document.querySelector("#results-table tbody").appendChild(row);
       document.getElementById("results-table").style.display = "table";
       statusDiv.textContent = "Done ✅";
@@ -42,7 +42,7 @@ function uploadFile(file) {
   statusDiv.textContent = `Uploading ${file.name}...`;
 
   const formData = new FormData();
-  formData.append("csvFile", file);
+  formData.append("file", file);
 
   fetch("/upload", { method: "POST", body: formData })
     .then(res => res.json())
@@ -51,7 +51,7 @@ function uploadFile(file) {
       tbody.innerHTML = "";
       data.results.forEach(row => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${row.domain}</td><td>${row.status}</td>`;
+        tr.innerHTML = `<td>${row.Domain}</td><td class="${row.Status}">${row.Status}</td>`;
         tbody.appendChild(tr);
       });
       document.getElementById("results-table").style.display = "table";
@@ -67,10 +67,18 @@ function uploadFile(file) {
 // ===== Chart.js Summary =====
 let chart;
 function updateChart(results) {
-  const counts = results.reduce((acc, row) => {
-    acc[row.status] = (acc[row.status] || 0) + 1;
-    return acc;
-  }, {});
+  // initialize all possible statuses
+  const counts = {
+    "Client On Gokwik": 0,
+    "Fastrr Link Found": 0,
+    "Fastrr Not Found": 0,
+    "Domain Unreachable": 0
+  };
+
+  results.forEach(row => {
+    const status = row.Status || row.status;
+    if (counts.hasOwnProperty(status)) counts[status]++;
+  });
 
   const labels = Object.keys(counts);
   const values = Object.values(counts);
@@ -83,7 +91,10 @@ function updateChart(results) {
     type: "pie",
     data: {
       labels,
-      datasets: [{ data: values, backgroundColor: ["#28a745", "#ffc107", "#dc3545", "#6c757d"] }]
+      datasets: [{ 
+        data: values, 
+        backgroundColor: ["#28a745", "#ffc107", "#f8d7da", "#6c757d"] 
+      }]
     },
     options: { responsive: true, plugins: { legend: { position: "bottom" } } }
   });
