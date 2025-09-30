@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crawler X</title>
+<title>CRAWLER-X</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -58,7 +58,7 @@ h1 { text-align: center; position: relative; z-index: 1; }
 #drop-zone.hover { border-color: #333; }
 
 #status { 
-  margin-bottom: 20px; 
+  margin-bottom: 6px; 
   font-weight: bold; 
   position: relative; 
   z-index: 1; 
@@ -66,6 +66,15 @@ h1 { text-align: center; position: relative; z-index: 1; }
   display: flex; 
   align-items: center; 
   gap: 10px;
+}
+
+/* Timer */
+#timer {
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: #333;
+  position: relative;
+  z-index: 1;
 }
 
 /* Spinner */
@@ -110,6 +119,7 @@ th { background: #f0f0f0; }
 <input type="file" id="file-input" style="display:none;" accept=".csv">
 
 <div id="status"></div>
+<div id="timer" style="display:none;"></div>
 
 <table id="results-table">
   <thead>
